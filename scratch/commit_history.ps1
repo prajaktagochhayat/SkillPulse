@@ -1,4 +1,4 @@
-# PowerShell script to create 14 days of backdated Git commits for SkillPulse
+# PowerShell script to create 15 days of backdated Git commits for SkillPulse (Aug 5 to Aug 19, 2026)
 
 git init
 git config user.name "Prajakta Gochhayat"
@@ -6,7 +6,9 @@ git config user.email "gochhayatprajakta@gmail.com"
 git branch -M main
 
 $commits = @(
-  @{ Date = "2026-08-06T10:15:00"; Msg = "feat: initial commit - setup Vite React TypeScript boilerplate" },
+  @{ Date = "2026-08-05T09:30:00"; Msg = "docs: getting started - project initialization & requirements outline" },
+
+  @{ Date = "2026-08-06T10:15:00"; Msg = "feat: setup Vite React TypeScript boilerplate" },
   @{ Date = "2026-08-06T14:30:00"; Msg = "style: configure Tailwind CSS design tokens and theme variables" },
   @{ Date = "2026-08-06T18:45:00"; Msg = "feat: add core types for users, quizzes, chapters, and attempts" },
 
