@@ -1,24 +1,33 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Award, Sun, Moon, LogOut, Flame, Sparkles, Zap, ArrowLeft, Settings } from 'lucide-react';
+import { Award, Sun, Moon, LogOut, Flame, Sparkles, Zap, ArrowLeft, Settings, User } from 'lucide-react';
 import { AuthModal } from '../auth/AuthModal';
 
 interface NavbarProps {
-  currentTab: string;
-  setCurrentTab: (tab: string) => void;
+  currentView: string;
+  onNavigate: (view: string) => void;
+  onOpenAuth?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenAuth }) => {
   const { user, role, logout, theme, toggleTheme } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const canGoBack = currentTab !== 'student-dashboard' && currentTab !== 'admin-dashboard';
+  const canGoBack = currentView !== 'discovery' && currentView !== 'admin-dashboard' && currentView !== 'hero';
 
   const handleBackNavigation = () => {
-    if (currentTab === 'quiz-details' || currentTab === 'quiz-attempt' || currentTab === 'quiz-result') {
-      setCurrentTab('quiz-discovery');
+    if (currentView === 'quiz-details' || currentView === 'quiz-attempt' || currentView === 'quiz-result') {
+      onNavigate('discovery');
     } else {
-      setCurrentTab(role === 'ADMIN' ? 'admin-dashboard' : 'student-dashboard');
+      onNavigate(role === 'ADMIN' ? 'admin-dashboard' : 'discovery');
+    }
+  };
+
+  const handleTriggerAuth = () => {
+    if (onOpenAuth) {
+      onOpenAuth();
+    } else {
+      setShowAuthModal(true);
     }
   };
 
@@ -41,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
 
             <div
               className="flex items-center space-x-3 cursor-pointer group"
-              onClick={() => setCurrentTab(role === 'ADMIN' ? 'admin-dashboard' : 'student-dashboard')}
+              onClick={() => onNavigate(user ? (role === 'ADMIN' ? 'admin-dashboard' : 'discovery') : 'hero')}
             >
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-amber-400 to-emerald-400 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:scale-105 transition">
                 <Zap className="w-6 h-6 text-purple-950 font-black" />
@@ -61,77 +70,71 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 hidden sm:block font-bold">
+                <p className="text-[10px] text-purple-900 dark:text-purple-300 font-bold hidden sm:block">
                   Engineering Assessment Platform
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Controls */}
+          {/* Right Action Menu */}
           <div className="flex items-center space-x-3">
-            {/* Study Streak Badge for logged in student */}
-            {user && role === 'STUDENT' && (
-              <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl badge-yellow text-xs font-black">
-                <Flame className="w-4 h-4 text-amber-700 fill-current animate-bounce" />
-                <span>9 Day Streak!</span>
-              </div>
-            )}
-
-            {/* Theme Toggle Button */}
+            {/* Theme Toggle (Default Light Mode) */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl badge-purple transition hover:scale-105 flex items-center space-x-1.5"
+              className="p-2.5 rounded-2xl glass-card-sub hover:bg-purple-500/20 text-purple-950 dark:text-purple-200 transition flex items-center space-x-2 text-xs font-black"
               title="Toggle Light / Dark Mode"
-              aria-label="Toggle Theme"
             >
               {theme === 'dark' ? (
                 <>
                   <Sun className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold hidden md:inline">Light Mode</span>
+                  <span className="hidden md:inline">Light Mode</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-4 h-4 text-purple-900" />
-                  <span className="text-xs font-bold hidden md:inline">Dark Mode</span>
+                  <Moon className="w-4 h-4 text-purple-700" />
+                  <span className="hidden md:inline">Dark Mode</span>
                 </>
               )}
             </button>
 
-            {/* Auth Profile / Settings Clickable Badge */}
             {user ? (
-              <div className="flex items-center space-x-2 border-l border-purple-300/30 pl-3">
+              <div className="flex items-center space-x-3">
+                {/* Profile Badge Link to Settings */}
                 <button
-                  onClick={() => setCurrentTab('profile-settings')}
-                  className="flex items-center space-x-2.5 p-1.5 rounded-2xl hover:bg-purple-500/10 transition group text-left"
-                  title="Profile Settings & Avatar Selector"
+                  onClick={() => onNavigate('profile-settings')}
+                  className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-2xl glass-card-sub hover:bg-purple-500/20 transition border border-purple-300/30"
+                  title="Click for Profile Settings & Avatar Gallery"
                 >
                   <img
                     src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                     alt={user.name}
-                    className="w-9 h-9 rounded-full border-2 border-emerald-400 object-cover shadow group-hover:scale-105 transition"
+                    className="w-8 h-8 rounded-full border-2 border-amber-400 object-cover"
                   />
-                  <div className="hidden md:block">
-                    <div className="text-xs profile-name-text line-clamp-1">{user.name}</div>
-                    <div className="text-[10px] profile-email-text line-clamp-1">{user.email}</div>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-xs font-black text-purple-950 dark:text-purple-100 leading-tight profile-name-text">
+                      {user.name}
+                    </p>
+                    <p className="text-[10px] text-purple-900 dark:text-purple-300 leading-tight profile-email-text">{user.email}</p>
                   </div>
-                  <Settings className="w-3.5 h-3.5 text-purple-600 dark:text-purple-300 hidden md:block group-hover:rotate-45 transition duration-200" />
+                  <Settings className="w-3.5 h-3.5 text-purple-800 dark:text-purple-300 ml-1" />
                 </button>
 
+                {/* Logout Button */}
                 <button
                   onClick={logout}
-                  className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/20 transition"
-                  title="Logout Account"
+                  className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 transition"
+                  title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <button
-                onClick={() => setShowAuthModal(true)}
-                className="btn-yellow-pastel px-4 py-2 rounded-xl text-xs font-black shadow-md flex items-center space-x-1.5"
+                onClick={handleTriggerAuth}
+                className="btn-yellow-pastel px-5 py-2.5 rounded-2xl text-xs font-black flex items-center space-x-2 shadow-lg hover:scale-105 transition"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-800" />
+                <Sparkles className="w-4 h-4 text-amber-900" />
                 <span>Sign In / Register</span>
               </button>
             )}
@@ -139,7 +142,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
         </div>
       </header>
 
-      {/* Auth Modal */}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </>
   );

@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [isLoading, setIsLoading] = useState(true);
 
   const applyTheme = (nextTheme: 'dark' | 'light') => {
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (currentUser) {
       setUser(currentUser);
     }
-    const savedTheme = (localStorage.getItem('quizhub_theme_v4') as 'dark' | 'light') || 'dark';
+    const savedTheme = (localStorage.getItem('quizhub_theme_v4') as 'dark' | 'light') || 'light';
     setTheme(savedTheme);
     applyTheme(savedTheme);
     setIsLoading(false);
@@ -63,8 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, password: string, role: UserRole) => {
-    const newUser = await api.register(name, email, password, role);
-    setUser(newUser);
+    const registered = await api.register(name, email, password, role);
+    setUser(registered);
   };
 
   const logout = async () => {
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
-        role: user ? user.role : 'STUDENT',
+        role: user?.role || 'STUDENT',
         login,
         register,
         logout,
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

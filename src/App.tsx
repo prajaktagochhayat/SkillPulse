@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
+import { LandingHeroPage } from './pages/LandingHeroPage';
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { QuizDiscovery } from './pages/student/QuizDiscovery';
 import { QuizDetails } from './pages/student/QuizDetails';
@@ -20,15 +21,17 @@ import { QuizManagement } from './pages/admin/QuizManagement';
 import { CategoryManagement } from './pages/admin/CategoryManagement';
 import { QuestionManagement } from './pages/admin/QuestionManagement';
 import { AdminAttempts } from './pages/admin/AdminAttempts';
+import { AuthModal } from './components/auth/AuthModal';
 
 import type { QuizAttempt as QuizAttemptType } from './types';
 
 const MainAppContent: React.FC = () => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [currentView, setCurrentView] = useState<string>('discovery');
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
   const [lastCompletedAttempt, setLastCompletedAttempt] = useState<QuizAttemptType | null>(null);
+  const [showAuthModalModal, setShowAuthModalModal] = useState(false);
 
   const handleNavigate = (view: string, id?: string) => {
     if (id) {
@@ -50,6 +53,10 @@ const MainAppContent: React.FC = () => {
   };
 
   const renderView = () => {
+    if (!user) {
+      return <LandingHeroPage onOpenAuth={() => setShowAuthModalModal(true)} />;
+    }
+
     switch (currentView) {
       case 'discovery':
         return <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />;
@@ -68,7 +75,7 @@ const MainAppContent: React.FC = () => {
           <QuizAttemptComponent
             quizId={selectedQuizId}
             onCancel={() => handleNavigate('quiz-details', selectedQuizId)}
-            onFinishAttempt={(attemptId) => handleNavigate('attempt-history')}
+            onFinishAttempt={() => handleNavigate('attempt-history')}
           />
         ) : (
           <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />
@@ -106,17 +113,19 @@ const MainAppContent: React.FC = () => {
       case 'question-management':
         return <QuestionManagement />;
       default:
-        return <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />;
+        return role === 'ADMIN' ? <AdminDashboard /> : <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300">
-      <Navbar currentView={currentView} onNavigate={handleNavigate} />
+      <Navbar currentView={currentView} onNavigate={handleNavigate} onOpenAuth={() => setShowAuthModalModal(true)} />
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        <Sidebar currentView={currentView} onNavigate={handleNavigate} />
+        {user && <Sidebar currentView={currentView} onNavigate={handleNavigate} />}
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">{renderView()}</main>
       </div>
+
+      {showAuthModalModal && <AuthModal onClose={() => setShowAuthModalModal(false)} />}
     </div>
   );
 };
