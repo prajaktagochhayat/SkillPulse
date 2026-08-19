@@ -1,19 +1,18 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
+  BarChart2,
   BookOpen,
   History,
   Trophy,
   Users,
   FolderTree,
   HelpCircle,
-  BarChart2,
   Gamepad2,
   Bookmark,
   ShieldCheck,
-  Award,
   Settings,
-  Sparkles,
+  LayoutDashboard,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,6 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate }) => 
   const role = user?.role || 'STUDENT';
 
   const studentLinks = [
+    { id: 'student-dashboard', label: 'Student Dashboard', icon: LayoutDashboard },
     { id: 'discovery', label: 'Learning Tracks', icon: BookOpen },
     { id: 'games-arcade', label: 'Interactive Games Arcade', icon: Gamepad2 },
     { id: 'saved-quizzes', label: 'My Bookmarks', icon: Bookmark },

@@ -27,7 +27,7 @@ import type { QuizAttempt as QuizAttemptType } from './types';
 
 const MainAppContent: React.FC = () => {
   const { user, role } = useAuth();
-  const [currentView, setCurrentView] = useState<string>('discovery');
+  const [currentView, setCurrentView] = useState<string>('student-dashboard');
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
   const [lastCompletedAttempt, setLastCompletedAttempt] = useState<QuizAttemptType | null>(null);
@@ -58,6 +58,14 @@ const MainAppContent: React.FC = () => {
     }
 
     switch (currentView) {
+      case 'student-dashboard':
+        return (
+          <StudentDashboard
+            onSelectQuiz={(id) => handleNavigate('quiz-details', id)}
+            onViewResult={(id) => handleNavigate('attempt-history')}
+            onNavigateToDiscovery={() => handleNavigate('discovery')}
+          />
+        );
       case 'discovery':
         return <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />;
       case 'quiz-details':
@@ -85,10 +93,14 @@ const MainAppContent: React.FC = () => {
           <QuizResultPage
             attempt={lastCompletedAttempt}
             onRetake={() => handleStartAttempt(lastCompletedAttempt.quizId)}
-            onBackToDashboard={() => handleNavigate('discovery')}
+            onBackToDashboard={() => handleNavigate('student-dashboard')}
           />
         ) : (
-          <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />
+          <StudentDashboard
+            onSelectQuiz={(id) => handleNavigate('quiz-details', id)}
+            onViewResult={(id) => handleNavigate('attempt-history')}
+            onNavigateToDiscovery={() => handleNavigate('discovery')}
+          />
         );
       case 'games-arcade':
         return <TechGamesPage onNavigate={handleNavigate} />;
@@ -113,12 +125,20 @@ const MainAppContent: React.FC = () => {
       case 'question-management':
         return <QuestionManagement />;
       default:
-        return role === 'ADMIN' ? <AdminDashboard /> : <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />;
+        return role === 'ADMIN' ? (
+          <AdminDashboard />
+        ) : (
+          <StudentDashboard
+            onSelectQuiz={(id) => handleNavigate('quiz-details', id)}
+            onViewResult={(id) => handleNavigate('attempt-history')}
+            onNavigateToDiscovery={() => handleNavigate('discovery')}
+          />
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-body)] flex flex-col font-sans transition-colors duration-300 app-layout-main">
       <Navbar currentView={currentView} onNavigate={handleNavigate} onOpenAuth={() => setShowAuthModalModal(true)} />
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
         {user && <Sidebar currentView={currentView} onNavigate={handleNavigate} />}

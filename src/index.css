@@ -26,12 +26,12 @@
     --border-card: rgba(147, 51, 234, 0.18);
   }
 
-  html.light, body.light, html.light #root {
+  html.light, body.light, html.light #root, html.light .app-layout-main {
     background-color: #f8fafc !important;
     color: #1e293b !important;
   }
 
-  html.dark, body.dark, html.dark #root {
+  html.dark, body.dark, html.dark #root, html.dark .app-layout-main {
     background-color: #090d16 !important;
     color: #f8fafc !important;
   }
@@ -63,7 +63,12 @@ html.light h1:not(.force-white),
 html.light h2:not(.force-white),
 html.light h3:not(.force-white),
 html.light h4:not(.force-white) {
-  color: #0f172a;
+  color: #0f172a !important;
+}
+
+html.light p:not(.force-purple-sub),
+html.light span:not(.force-white):not(.force-purple-sub) {
+  color: #334155;
 }
 
 html.light .brand-logo-text {
