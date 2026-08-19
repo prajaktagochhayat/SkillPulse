@@ -1,49 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import type { Quiz, Question, Option, QuestionType, DifficultyLevel } from '../../types';
-import { Plus, Edit, Trash2, Upload, FileText, CheckCircle2, HelpCircle, AlertCircle, Info } from 'lucide-react';
+import type { Question, Quiz } from '../../types';
+import { HelpCircle, Plus, Upload, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
 
 export const QuestionManagement: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuizId, setSelectedQuizId] = useState<string>('');
   const [questions, setQuestions] = useState<Question[]>([]);
-
-  // Modals
-  const [showQuestionModal, setShowQuestionModal] = useState(false);
-  const [showCsvModal, setShowCsvModal] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-
-  // Question Form State
-  const [questionText, setQuestionText] = useState('');
-  const [type, setType] = useState<QuestionType>('single');
-  const [marks, setMarks] = useState(1);
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('Intermediate');
-  const [explanation, setExplanation] = useState('');
-  const [options, setOptions] = useState<{ id?: string; optionText: string; isCorrect: boolean }[]>([
-    { optionText: '', isCorrect: false },
-    { optionText: '', isCorrect: false },
-    { optionText: '', isCorrect: false },
-    { optionText: '', isCorrect: false },
-  ]);
-
-  // CSV Import state
   const [csvContent, setCsvContent] = useState('');
+  const [importStatusMsg, setImportStatusMsg] = useState('');
 
   useEffect(() => {
     loadQuizzes();
   }, []);
 
-  useEffect(() => {
-    if (selectedQuizId) {
-      loadQuestions(selectedQuizId);
-    }
-  }, [selectedQuizId]);
-
   const loadQuizzes = async () => {
     const list = await api.getQuizzes('ADMIN');
     setQuizzes(list);
-    if (list.length > 0 && !selectedQuizId) {
+    if (list.length > 0) {
       setSelectedQuizId(list[0].id);
+      loadQuestions(list[0].id);
     }
   };
 
@@ -52,127 +28,55 @@ export const QuestionManagement: React.FC = () => {
     setQuestions(qList);
   };
 
-  const handleOpenCreateQuestion = () => {
-    setEditingQuestion(null);
-    setQuestionText('');
-    setType('single');
-    setMarks(1);
-    setDifficulty('Intermediate');
-    setExplanation('');
-    setOptions([
-      { optionText: 'Option A', isCorrect: true },
-      { optionText: 'Option B', isCorrect: false },
-      { optionText: 'Option C', isCorrect: false },
-      { optionText: 'Option D', isCorrect: false },
-    ]);
-    setShowQuestionModal(true);
+  const handleSelectQuiz = (quizId: string) => {
+    setSelectedQuizId(quizId);
+    loadQuestions(quizId);
   };
 
-  const handleOpenEditQuestion = (q: Question) => {
-    setEditingQuestion(q);
-    setQuestionText(q.questionText);
-    setType(q.type);
-    setMarks(q.marks);
-    setDifficulty(q.difficulty);
-    setExplanation(q.explanation);
-    setOptions(
-      q.options.map((o) => ({
-        id: o.id,
-        optionText: o.optionText,
-        isCorrect: o.isCorrect,
-      }))
-    );
-    setShowQuestionModal(true);
-  };
-
-  const handleOptionTextChange = (index: number, text: string) => {
-    const newOptions = [...options];
-    newOptions[index].optionText = text;
-    setOptions(newOptions);
-  };
-
-  const handleOptionCorrectToggle = (index: number) => {
-    const newOptions = options.map((opt, i) => {
-      if (type === 'single' || type === 'boolean') {
-        return { ...opt, isCorrect: i === index };
-      }
-      return i === index ? { ...opt, isCorrect: !opt.isCorrect } : opt;
-    });
-    setOptions(newOptions);
-  };
-
-  const handleSaveQuestion = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!questionText.trim() || !selectedQuizId) return;
-
-    const formattedOptions: Option[] = options.map((opt, i) => ({
-      id: opt.id || `opt-${Date.now()}-${i}`,
-      questionId: editingQuestion ? editingQuestion.id : '',
-      optionText: opt.optionText,
-      isCorrect: opt.isCorrect,
-    }));
-
-    if (editingQuestion) {
-      await api.updateQuestion(editingQuestion.id, {
-        questionText,
-        type,
-        marks: Number(marks),
-        difficulty,
-        explanation,
-        options: formattedOptions,
-      });
-    } else {
-      await api.createQuestion({
-        quizId: selectedQuizId,
-        questionText,
-        type,
-        marks: Number(marks),
-        difficulty,
-        explanation,
-        options: formattedOptions,
-      });
+  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && selectedQuizId) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        if (reader.result) {
+          try {
+            const count = await api.importQuestionsCsv(selectedQuizId, reader.result as string);
+            setImportStatusMsg(`Successfully imported ${count} questions to subject!`);
+            loadQuestions(selectedQuizId);
+          } catch (err: any) {
+            setImportStatusMsg('Error importing CSV: ' + err.message);
+          }
+        }
+      };
+      reader.readAsText(file);
     }
-
-    setShowQuestionModal(false);
-    loadQuestions(selectedQuizId);
   };
 
-  const handleDeleteQuestion = async (id: string) => {
-    if (window.confirm('Delete this question?')) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Delete this question from bank?')) {
       await api.deleteQuestion(id);
       loadQuestions(selectedQuizId);
     }
   };
 
-  const handleImportCsv = async () => {
-    if (!csvContent.trim() || !selectedQuizId) return;
-    try {
-      const count = await api.importQuestionsCsv(selectedQuizId, csvContent);
-      alert(`Successfully imported ${count} questions!`);
-      setShowCsvModal(false);
-      setCsvContent('');
-      loadQuestions(selectedQuizId);
-    } catch (err: any) {
-      alert('CSV Import Error: ' + err.message);
-    }
-  };
-
-  const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
-
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* Header & Quiz Selector */}
+    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Question Bank & Manager</h1>
-          <p className="text-sm text-slate-400">Configure questions, answer options, explanations, and CSV import.</p>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+            <HelpCircle className="w-7 h-7 text-purple-600 dark:text-purple-300" />
+            <span>Question Bank & Manager</span>
+          </h1>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            Configure questions, answer options, explanations, and CSV batch import.
+          </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <select
             value={selectedQuizId}
-            onChange={(e) => setSelectedQuizId(e.target.value)}
-            className="p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-sm font-medium focus:outline-none focus:border-blue-500"
+            onChange={(e) => handleSelectQuiz(e.target.value)}
+            className="px-4 py-2.5 glass-card-sub rounded-2xl text-xs text-slate-900 dark:text-slate-100 font-bold focus:outline-none border border-purple-300/40"
           >
             {quizzes.map((q) => (
               <option key={q.id} value={q.id}>
@@ -181,268 +85,65 @@ export const QuestionManagement: React.FC = () => {
             ))}
           </select>
 
-          <button
-            onClick={() => setShowCsvModal(true)}
-            className="flex items-center space-x-2 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-semibold text-sm transition"
-            title="Import Questions via CSV file"
-          >
-            <Upload className="w-4 h-4 text-emerald-400" />
-            <span className="hidden sm:inline">CSV Import</span>
-          </button>
-
-          <button
-            onClick={handleOpenCreateQuestion}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-500/20 transition"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Question</span>
-          </button>
+          <label className="btn-yellow-pastel px-4 py-2.5 rounded-2xl text-xs font-black shrink-0 cursor-pointer flex items-center space-x-2 shadow">
+            <Upload className="w-4 h-4 text-amber-800" />
+            <span>Batch Import CSV</span>
+            <input type="file" accept=".csv" onChange={handleImportCsv} className="hidden" />
+          </label>
         </div>
       </div>
 
-      {/* Questions List */}
-      <div className="space-y-4">
-        {questions.map((q, index) => (
-          <div key={q.id} className="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start space-x-3">
-                <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-sm shrink-0">
-                  Q{index + 1}
-                </span>
-                <div>
-                  <h3 className="font-bold text-slate-100 text-base">{q.questionText}</h3>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                      {q.type.toUpperCase()}
-                    </span>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                      {q.marks} {q.marks === 1 ? 'Mark' : 'Marks'}
-                    </span>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                      {q.difficulty}
-                    </span>
-                  </div>
-                </div>
-              </div>
+      {importStatusMsg && (
+        <div className="p-4 rounded-2xl badge-sage text-xs font-black flex items-center space-x-2">
+          <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+          <span>{importStatusMsg}</span>
+        </div>
+      )}
 
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleOpenEditQuestion(q)}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteQuestion(q.id)}
-                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+      {/* Question Cards */}
+      <div className="space-y-4">
+        {questions.map((q, idx) => (
+          <div key={q.id} className="glass-card p-6 rounded-3xl space-y-4 border border-purple-300/30">
+            <div className="flex items-center justify-between">
+              <span className="badge-purple px-3 py-1 rounded-xl text-xs font-black">
+                Q{idx + 1} • {q.difficulty || 'Intermediate'} ({q.marks || 1} Mark)
+              </span>
+              <button
+                onClick={() => handleDelete(q.id)}
+                className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 transition"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Answer Options Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+            <h3 className="text-base font-black text-slate-900 dark:text-slate-100">{q.questionText}</h3>
+
+            {/* Options List with High Contrast */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {q.options.map((opt) => (
                 <div
                   key={opt.id}
-                  className={`p-2.5 rounded-xl border text-xs flex items-center justify-between ${
+                  className={`p-3.5 rounded-2xl border text-xs font-bold flex items-center justify-between ${
                     opt.isCorrect
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-semibold'
-                      : 'bg-slate-800/40 border-slate-800 text-slate-300'
+                      ? 'badge-sage border-emerald-400'
+                      : 'glass-card-sub text-slate-900 dark:text-slate-100 border-purple-300/30'
                   }`}
                 >
-                  <span>{opt.optionText}</span>
-                  {opt.isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
+                  <span className="profile-name-text">{opt.optionText}</span>
+                  {opt.isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-700" />}
                 </div>
               ))}
             </div>
 
-            {/* Explanation */}
             {q.explanation && (
-              <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800/60 text-xs text-slate-400 flex items-start space-x-2">
-                <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-slate-300">Explanation: </span>
-                  {q.explanation}
-                </div>
+              <div className="p-3.5 rounded-2xl badge-purple text-xs font-bold text-purple-950 dark:text-purple-100">
+                <span className="font-black text-purple-900 block">Explanation:</span>
+                <p>{q.explanation}</p>
               </div>
             )}
           </div>
         ))}
-
-        {questions.length === 0 && (
-          <div className="glass-card p-12 text-center text-slate-400 rounded-2xl border border-slate-800">
-            <HelpCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <p className="font-semibold text-slate-300">No questions added to this quiz yet.</p>
-            <p className="text-xs text-slate-500 mt-1">Click "Add Question" or "CSV Import" to populate the question bank.</p>
-          </div>
-        )}
       </div>
-
-      {/* Create/Edit Question Modal */}
-      {showQuestionModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-2xl p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <h2 className="text-lg font-bold text-slate-100">
-              {editingQuestion ? 'Edit Question' : 'Add New Question'}
-            </h2>
-
-            <form onSubmit={handleSaveQuestion} className="space-y-4 text-xs text-slate-300">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Question Statement *</label>
-                <textarea
-                  rows={2}
-                  required
-                  value={questionText}
-                  onChange={(e) => setQuestionText(e.target.value)}
-                  placeholder="e.g. Which method converts a JSON string into a JavaScript object?"
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Type</label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as QuestionType)}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs focus:outline-none"
-                  >
-                    <option value="single">Single Choice (MCQ)</option>
-                    <option value="multiple">Multiple Choice</option>
-                    <option value="boolean">True / False</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Marks</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={marks}
-                    onChange={(e) => setMarks(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Difficulty</label>
-                  <select
-                    value={difficulty}
-                    onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs focus:outline-none"
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Options */}
-              <div className="space-y-2">
-                <label className="block text-slate-300 font-semibold">Answer Options (Check correct answer)</label>
-                {options.map((opt, i) => (
-                  <div key={i} className="flex items-center space-x-2">
-                    <input
-                      type={type === 'multiple' ? 'checkbox' : 'radio'}
-                      name="correct-option"
-                      checked={opt.isCorrect}
-                      onChange={() => handleOptionCorrectToggle(i)}
-                      className="w-4 h-4 accent-emerald-500"
-                    />
-                    <input
-                      type="text"
-                      required
-                      value={opt.optionText}
-                      onChange={(e) => handleOptionTextChange(i, e.target.value)}
-                      placeholder={`Option ${String.fromCharCode(65 + i)}`}
-                      className="w-full p-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-xs focus:outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Explanation (Detailed Answer Review)</label>
-                <textarea
-                  rows={2}
-                  value={explanation}
-                  onChange={(e) => setExplanation(e.target.value)}
-                  placeholder="Explain why this answer is correct for the student review page..."
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setShowQuestionModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/20"
-                >
-                  Save Question
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CSV Import Modal */}
-      {showCsvModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-lg font-bold text-slate-100 flex items-center space-x-2">
-                <Upload className="w-5 h-5 text-emerald-400" />
-                <span>Bulk CSV Question Import</span>
-              </h2>
-              <button onClick={() => setShowCsvModal(false)} className="text-slate-400 hover:text-slate-200">
-                ✕
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-400">
-              Paste CSV text below with format: <br />
-              <code className="text-blue-400 bg-slate-800 px-1 py-0.5 rounded">
-                QuestionText,OptionA,OptionB,OptionC,OptionD,CorrectIndex(0-3),Explanation
-              </code>
-            </p>
-
-            <textarea
-              rows={6}
-              value={csvContent}
-              onChange={(e) => setCsvContent(e.target.value)}
-              placeholder={`"What is HTML?",HyperText Markup,HighText Machine,HyperTool,HomeTool,0,HyperText Markup Language\n"Which keyword is constant?",var,let,const,static,2,const declares block scoped constants`}
-              className="w-full p-3 bg-slate-950 font-mono border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none"
-            />
-
-            <div className="flex items-center justify-end space-x-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowCsvModal(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleImportCsv}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-emerald-500/20"
-              >
-                Parse & Import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

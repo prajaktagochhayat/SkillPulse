@@ -1,96 +1,95 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard,
-  Users,
   BookOpen,
+  History,
+  Trophy,
+  Users,
   FolderTree,
   HelpCircle,
-  Trophy,
-  History,
-  Compass,
-  FileCheck,
-  ChevronRight,
-  Bookmark,
+  BarChart2,
   Gamepad2,
+  Bookmark,
+  ShieldCheck,
+  Award,
   Settings,
+  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
-  currentTab: string;
-  setCurrentTab: (tab: string) => void;
+  currentView: string;
+  onNavigate: (view: string) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) => {
-  const { role, user } = useAuth();
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate }) => {
+  const { user } = useAuth();
+  const role = user?.role || 'STUDENT';
 
-  const adminNavItems = [
-    { id: 'admin-dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
-    { id: 'admin-users', label: 'User Management', icon: Users },
-    { id: 'admin-quizzes', label: 'Quiz Management', icon: BookOpen },
-    { id: 'admin-categories', label: 'Category Management', icon: FolderTree },
-    { id: 'admin-questions', label: 'Question Bank & Import', icon: HelpCircle },
-    { id: 'admin-attempts', label: 'Attempt Results', icon: FileCheck },
-    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-  ];
-
-  const studentNavItems = [
-    { id: 'student-dashboard', label: 'Student Dashboard', icon: LayoutDashboard },
-    { id: 'quiz-discovery', label: 'Learning Tracks', icon: Compass },
-    { id: 'tech-games', label: 'Interactive Games Arcade', icon: Gamepad2 },
+  const studentLinks = [
+    { id: 'discovery', label: 'Learning Tracks', icon: BookOpen },
+    { id: 'games-arcade', label: 'Interactive Games Arcade', icon: Gamepad2 },
     { id: 'saved-quizzes', label: 'My Bookmarks', icon: Bookmark },
     { id: 'attempt-history', label: 'My Attempt History', icon: History },
     { id: 'leaderboard', label: 'Leaderboard & XP', icon: Trophy },
+    { id: 'cert-scanner', label: 'Verify Certificate', icon: ShieldCheck },
     { id: 'profile-settings', label: 'Profile Settings', icon: Settings },
   ];
 
-  const navItems = role === 'ADMIN' ? adminNavItems : studentNavItems;
+  const adminLinks = [
+    { id: 'admin-dashboard', label: 'Admin Dashboard', icon: BarChart2 },
+    { id: 'user-management', label: 'User Management', icon: Users },
+    { id: 'quiz-management', label: 'Quiz Management', icon: BookOpen },
+    { id: 'category-management', label: 'Category Management', icon: FolderTree },
+    { id: 'question-management', label: 'Question Bank & Import', icon: HelpCircle },
+    { id: 'attempt-history', label: 'Attempt Results', icon: History },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+  ];
+
+  const links = role === 'ADMIN' ? adminLinks : studentLinks;
 
   return (
-    <aside className="w-64 glass-card p-4 flex flex-col justify-between shrink-0 min-h-[calc(100vh-65px)] transition-colors border-r border-purple-300/20">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider px-3 mb-2">
-            {role === 'ADMIN' ? 'Admin Portal' : 'Student Navigation'}
-          </h2>
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-black transition-all duration-150 ${
-                    isActive
-                      ? 'badge-purple text-purple-950 dark:text-purple-100 shadow-sm border border-purple-400'
-                      : 'nav-link-inactive hover:bg-purple-500/10'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-purple-700 dark:text-purple-300' : 'text-purple-600 dark:text-purple-400'}`} />
-                    <span>{item.label}</span>
-                  </div>
-                  {isActive && <ChevronRight className="w-4 h-4 text-purple-700 dark:text-purple-300" />}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+    <aside className="w-64 glass-card border-r border-purple-300/30 min-h-[calc(100vh-4rem)] p-4 space-y-6 shrink-0 hidden md:block">
+      <div className="space-y-1">
+        <span className="text-[10px] font-black text-purple-950 dark:text-purple-300 uppercase tracking-widest px-3 block">
+          {role === 'ADMIN' ? 'ADMIN PORTAL' : 'STUDENT PORTAL'}
+        </span>
+        <nav className="space-y-1 pt-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+            const isActive = currentView === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => onNavigate(link.id)}
+                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all ${
+                  isActive
+                    ? 'btn-yellow-pastel text-purple-950 shadow-md font-black'
+                    : 'text-purple-950 dark:text-purple-100 hover:bg-purple-500/15'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-purple-950 font-black' : 'text-purple-800 dark:text-purple-300'}`} />
+                <span className="truncate profile-name-text">{link.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* User Session Info Card */}
       {user && (
-        <div
-          onClick={() => setCurrentTab('profile-settings')}
-          className="p-3.5 rounded-2xl glass-card-sub text-xs space-y-1 border border-purple-300/30 cursor-pointer hover:border-amber-400 transition"
-        >
-          <div className="flex items-center justify-between font-black text-slate-900 dark:text-slate-100">
-            <span>Role Session</span>
-            <span className="badge-yellow px-2 py-0.5 rounded-md text-[10px]">{user.role}</span>
+        <div className="pt-4 border-t border-purple-300/20 space-y-2">
+          <div className="glass-card-sub p-3 rounded-2xl flex items-center space-x-3">
+            <img
+              src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              alt={user.name}
+              className="w-8 h-8 rounded-full border border-amber-400 object-cover"
+            />
+            <div className="overflow-hidden">
+              <p className="text-xs font-black text-purple-950 dark:text-purple-100 truncate profile-name-text">
+                {user.name}
+              </p>
+              <p className="text-[10px] text-purple-900 dark:text-purple-300 truncate profile-email-text">{user.email}</p>
+            </div>
           </div>
-          <p className="text-[11px] profile-name-text line-clamp-1">{user.name}</p>
-          <p className="text-[10px] profile-email-text line-clamp-1">{user.email}</p>
         </div>
       )}
     </aside>
