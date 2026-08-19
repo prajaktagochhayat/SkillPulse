@@ -1,32 +1,38 @@
-# React + TypeScript + Vite
+# ⚡ SkillPulse - Engineering & Technology Assessment Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**SkillPulse** is a production-grade engineering assessment platform built with React, Vite, TypeScript, Tailwind CSS, and Supabase.
 
-Currently, two official plugins are available:
+## 🌟 Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **☀️ Light & Dark Theme System**: High-contrast typography and accessible color palettes.
+- **📚 18 Engineering Subject Tracks**: Full curriculum across Python, C, C++, Java, JS, TS, SQL, MongoDB, DSA, ML, AI, Security, DevOps, OS, HTML/CSS, React, Node, and Git.
+- **📖 144 Subject Chapters**: 8 detailed chapters per subject with multi-paragraph study notes, key takeaways, and executable code snippets.
+- **🎮 Interactive Games Arcade**: Non-MCQ coding mini-games including Code Line Unscrambler Puzzles and Tech Term Word Finder Matrices.
+- **⚙️ Profile Settings**: Avatar character gallery and custom image file upload.
+- **🛡️ Universal Certificate Verifier**: Verification engine for official completion certificates.
+- **🗄️ Supabase Database Integration**: Real-time authentication, user profiles, and attempt score analytics.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 How to Deploy on Vercel (Step-by-Step)
 
-## Expanding the Oxlint configuration
+### Step 1: Sign in to Vercel
+1. Go to **[vercel.com](https://vercel.com/)**.
+2. Sign in using your **GitHub** account (`prajaktagochhayat`).
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+### Step 2: Import Your Repository
+1. Click **Add New...** -> **Project**.
+2. Select **`prajaktagochhayat/SkillPulse`** from your repository list.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+### Step 3: Configure Project Settings
+- **Framework Preset**: Vite (Auto-detected).
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Step 4: Add Environment Variables
+Expand **Environment Variables** and add:
+- `VITE_SUPABASE_URL`: `https://tpqafxvxftfbxpbmfdtb.supabase.co`
+- `VITE_SUPABASE_ANON_KEY`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwcWFmeHZ4ZnRmYnhwYm1mZHRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDQ1NjYsImV4cCI6MjEwMjcyMDU2Nn0.ikCjTairk4yJniXki3yalPdygyHy4JvXpCnx6eJNJ4U`
+
+### Step 5: Click Deploy
+Click **Deploy**. Vercel will compile and host your app live with an SSL certificate!
