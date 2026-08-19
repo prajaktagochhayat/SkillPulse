@@ -29,6 +29,7 @@ const MainAppContent: React.FC = () => {
   const { user, role } = useAuth();
   const [currentView, setCurrentView] = useState<string>('student-dashboard');
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+  const [selectedChapterId, setSelectedChapterId] = useState<string | undefined>(undefined);
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
   const [lastCompletedAttempt, setLastCompletedAttempt] = useState<QuizAttemptType | null>(null);
   const [showAuthModalModal, setShowAuthModalModal] = useState(false);
@@ -42,14 +43,10 @@ const MainAppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleStartAttempt = (quizId: string) => {
+  const handleStartAttempt = (quizId: string, chapterId?: string) => {
     setSelectedQuizId(quizId);
+    setSelectedChapterId(chapterId);
     setCurrentView('quiz-attempt');
-  };
-
-  const handleAttemptCompleted = (attempt: QuizAttemptType) => {
-    setLastCompletedAttempt(attempt);
-    setCurrentView('quiz-result');
   };
 
   const renderView = () => {
@@ -73,7 +70,7 @@ const MainAppContent: React.FC = () => {
           <QuizDetails
             quizId={selectedQuizId}
             onBack={() => handleNavigate('discovery')}
-            onStartQuiz={() => handleStartAttempt(selectedQuizId)}
+            onStartQuiz={(quizId, chId) => handleStartAttempt(quizId, chId)}
           />
         ) : (
           <QuizDiscovery onSelectQuiz={(id) => handleNavigate('quiz-details', id)} onNavigate={handleNavigate} />
@@ -82,6 +79,7 @@ const MainAppContent: React.FC = () => {
         return selectedQuizId ? (
           <QuizAttemptComponent
             quizId={selectedQuizId}
+            chapterId={selectedChapterId}
             onCancel={() => handleNavigate('quiz-details', selectedQuizId)}
             onFinishAttempt={() => handleNavigate('attempt-history')}
           />

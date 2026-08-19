@@ -6,11 +6,12 @@ import { Clock, AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, FileCheck } 
 
 interface QuizAttemptProps {
   quizId: string;
+  chapterId?: string;
   onFinishAttempt: (attemptId: string) => void;
   onCancel: () => void;
 }
 
-export const QuizAttemptComponent: React.FC<QuizAttemptProps> = ({ quizId, onFinishAttempt, onCancel }) => {
+export const QuizAttemptComponent: React.FC<QuizAttemptProps> = ({ quizId, chapterId, onFinishAttempt, onCancel }) => {
   const { user } = useAuth();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -28,7 +29,7 @@ export const QuizAttemptComponent: React.FC<QuizAttemptProps> = ({ quizId, onFin
 
   useEffect(() => {
     startAttempt();
-  }, [quizId]);
+  }, [quizId, chapterId]);
 
   const startAttempt = async () => {
     if (!user) return;
@@ -36,193 +37,169 @@ export const QuizAttemptComponent: React.FC<QuizAttemptProps> = ({ quizId, onFin
       const quizData = await api.getQuizById(quizId);
       setQuiz(quizData);
 
-      const res = await api.startQuizAttempt(quizId, user.id);
+      const res = await api.startQuizAttempt(quizId, chapterId);
       setQuestions(res.questions);
-
-      const durationSec = (quizData?.duration || 20) * 60;
-      setTimeLeftSeconds(durationSec);
+      if (quizData) {
+        setTimeLeftSeconds(quizData.duration * 60);
+      }
     } catch (err: any) {
-      setErrorMsg(err.message);
+      setErrorMsg(err.message || 'Failed to start attempt session.');
     }
   };
 
   useEffect(() => {
     if (timeLeftSeconds <= 0) {
-      handleAutoSubmit();
+      handleSubmitAttempt();
       return;
     }
+
     const timer = setInterval(() => {
       setTimeLeftSeconds((prev) => prev - 1);
     }, 1000);
+
     return () => clearInterval(timer);
   }, [timeLeftSeconds]);
 
-  const handleAutoSubmit = () => {
-    submitAttempt();
+  const handleSelectOption = (questionId: string, optionId: string) => {
+    setUserAnswers((prev) => ({
+      ...prev,
+      [questionId]: {
+        selectedOptionIds: [optionId],
+      },
+    }));
   };
 
-  const handleSelectOption = (questionId: string, optionId: string, isMultiple: boolean) => {
-    setUserAnswers((prev) => {
-      const current = prev[questionId]?.selectedOptionIds || [];
-      let updated: string[];
-
-      if (isMultiple) {
-        updated = current.includes(optionId) ? current.filter((id) => id !== optionId) : [...current, optionId];
-      } else {
-        updated = [optionId];
-      }
-
-      return {
-        ...prev,
-        [questionId]: { ...prev[questionId], selectedOptionIds: updated },
-      };
-    });
-  };
-
-  const submitAttempt = async () => {
-    if (!user || !quiz) return;
+  const handleSubmitAttempt = async () => {
+    if (!user || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      const formattedAnswers = Object.entries(userAnswers).map(([qId, val]) => ({
+      const formattedAnswers = Object.entries(userAnswers).map(([qId, ans]) => ({
         questionId: qId,
-        selectedOptionIds: val.selectedOptionIds,
-        textAnswer: val.textAnswer,
+        selectedOptionIds: ans.selectedOptionIds,
+        textAnswer: ans.textAnswer,
       }));
 
-      const elapsed = quiz.duration * 60 - timeLeftSeconds;
-      const attempt = await api.submitQuizAttempt(quiz.id, user.id, formattedAnswers, Math.max(1, elapsed));
+      const elapsed = quiz ? quiz.duration * 60 - timeLeftSeconds : 300;
+      const attempt = await api.submitQuizAttempt(quizId, user.id, formattedAnswers, Math.max(10, elapsed), chapterId);
+
       onFinishAttempt(attempt.id);
     } catch (err: any) {
-      setErrorMsg(err.message);
-    } finally {
+      setErrorMsg(err.message || 'Failed to submit quiz attempt.');
       setIsSubmitting(false);
     }
   };
 
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
-  if (errorMsg) {
-    return (
-      <div className="glass-card p-8 rounded-3xl text-center space-y-4 max-w-md mx-auto my-12">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto" />
-        <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">Attempt Blocked</h2>
-        <p className="text-xs text-rose-500 font-bold">{errorMsg}</p>
-        <button onClick={onCancel} className="btn-yellow-pastel px-6 py-2.5 rounded-xl text-xs font-black">
-          Back to Learning Tracks
-        </button>
-      </div>
-    );
-  }
-
   if (!quiz || questions.length === 0) {
     return (
-      <div className="p-12 text-center space-y-3">
-        <div className="w-10 h-10 rounded-2xl bg-amber-400 animate-spin mx-auto"></div>
-        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Preparing Assessment Questions...</p>
+      <div className="p-8 text-center text-slate-800 dark:text-slate-200">
+        <p>Initializing Chapter Quiz Session...</p>
       </div>
     );
   }
 
   const currentQ = questions[currentIdx];
-  const currentSelection = userAnswers[currentQ?.id]?.selectedOptionIds || [];
+  const formattedMinutes = Math.floor(timeLeftSeconds / 60);
+  const formattedSeconds = timeLeftSeconds % 60;
+  const isLastQ = currentIdx === questions.length - 1;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
-      {/* Header Bar with Back Navigation */}
-      <div className="glass-card p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-purple-300/30">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to exit? Unsubmitted progress will be lost.')) {
-                onCancel();
-              }
-            }}
-            className="p-2 rounded-xl badge-purple hover:bg-purple-200 transition flex items-center space-x-1 text-xs font-black"
-          >
-            <ArrowLeft className="w-4 h-4 text-purple-900" />
-            <span>Back to Subject</span>
-          </button>
-
-          <div>
-            <h1 className="text-base font-black text-slate-900 dark:text-slate-100 line-clamp-1">{quiz.title}</h1>
-            <p className="text-[11px] text-slate-600 dark:text-slate-400 font-bold">
-              Question {currentIdx + 1} of {questions.length}
-            </p>
-          </div>
+      {/* Top Header Bar */}
+      <div className="glass-card rounded-3xl p-6 border border-purple-300/30 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <span className="badge-purple px-3 py-1 rounded-xl text-xs font-black">{quiz.title}</span>
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 profile-name-text mt-1">
+            Question {currentIdx + 1} of {questions.length}
+          </h2>
         </div>
 
-        {/* Live Timer Pill */}
-        <div className="flex items-center space-x-2 badge-yellow px-4 py-2 rounded-xl text-xs font-black">
-          <Clock className="w-4 h-4 text-amber-700 animate-pulse" />
-          <span>Time Remaining: {formatTime(timeLeftSeconds)}</span>
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 badge-yellow px-4 py-2 rounded-2xl text-xs font-black">
+            <Clock className="w-4 h-4 text-amber-900" />
+            <span>
+              {String(formattedMinutes).padStart(2, '0')}:{String(formattedSeconds).padStart(2, '0')}
+            </span>
+          </div>
+
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 text-xs font-black"
+          >
+            Cancel Attempt
+          </button>
         </div>
       </div>
 
+      {errorMsg && (
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-black">
+          {errorMsg}
+        </div>
+      )}
+
       {/* Main Question Card */}
-      <div className="glass-card p-6 sm:p-8 rounded-3xl space-y-6">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="badge-purple px-2.5 py-0.5 rounded-lg font-black">
-              {currentQ.difficulty || 'Intermediate'}
-            </span>
-            <span className="font-black text-slate-800 dark:text-slate-200">{currentQ.marks || 1} Mark(s)</span>
-          </div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">{currentQ.questionText}</h2>
+      <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-6 border border-purple-300/30 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-purple-300/20 pb-4">
+          <span className="badge-purple px-3 py-1 rounded-xl text-xs font-black">
+            {currentQ.difficulty || 'Intermediate'} • {currentQ.marks || 1} Mark
+          </span>
+          <span className="text-xs font-black text-purple-900 dark:text-purple-300">
+            Progress: {Math.round(((currentIdx + 1) / questions.length) * 100)}%
+          </span>
         </div>
 
-        {/* Options Grid */}
+        <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 profile-name-text">
+          {currentQ.questionText}
+        </h3>
+
+        {/* Options Selection Grid */}
         <div className="space-y-3">
           {currentQ.options.map((opt) => {
-            const isSelected = currentSelection.includes(opt.id);
+            const isSelected = userAnswers[currentQ.id]?.selectedOptionIds.includes(opt.id);
             return (
               <div
                 key={opt.id}
-                onClick={() => handleSelectOption(currentQ.id, opt.id, currentQ.type === 'multiple')}
-                className={`p-4 rounded-2xl border text-xs font-bold cursor-pointer transition flex items-center justify-between ${
+                onClick={() => handleSelectOption(currentQ.id, opt.id)}
+                className={`p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between font-bold text-xs ${
                   isSelected
-                    ? 'badge-yellow shadow-md border-amber-400'
-                    : 'glass-card-sub text-slate-900 dark:text-slate-100 hover:border-amber-400'
+                    ? 'btn-yellow-pastel text-purple-950 shadow-md border-amber-400 font-black'
+                    : 'glass-card-sub text-slate-900 dark:text-slate-100 border-purple-300/30 hover:bg-purple-500/10'
                 }`}
               >
-                <span>{opt.optionText}</span>
-                {isSelected && <CheckCircle2 className="w-5 h-5 text-amber-700" />}
+                <span className="profile-name-text">{opt.optionText}</span>
+                {isSelected && <CheckCircle2 className="w-5 h-5 text-purple-950 shrink-0" />}
               </div>
             );
           })}
         </div>
 
-        {/* Navigation Controls */}
-        <div className="pt-4 border-t border-purple-300/20 flex items-center justify-between">
+        {/* Navigation Actions */}
+        <div className="flex items-center justify-between pt-6 border-t border-purple-300/20">
           <button
-            onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
             disabled={currentIdx === 0}
-            className="px-4 py-2 rounded-xl text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-200 dark:bg-slate-800 disabled:opacity-40 flex items-center space-x-1"
+            onClick={() => setCurrentIdx((prev) => prev - 1)}
+            className="px-4 py-2.5 rounded-2xl badge-purple disabled:opacity-30 text-xs font-black flex items-center space-x-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 text-purple-900" />
             <span>Previous</span>
           </button>
 
-          {currentIdx < questions.length - 1 ? (
+          {isLastQ ? (
             <button
-              onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-              className="btn-yellow-pastel px-6 py-2 rounded-xl text-xs font-black flex items-center space-x-1"
+              onClick={handleSubmitAttempt}
+              disabled={isSubmitting}
+              className="btn-yellow-pastel px-6 py-3 rounded-2xl text-xs font-black flex items-center space-x-2 shadow-lg"
             >
-              <span>Next Question</span>
-              <ArrowRight className="w-4 h-4" />
+              <FileCheck className="w-4 h-4 text-amber-900" />
+              <span>{isSubmitting ? 'Submitting Score...' : 'Submit Assessment'}</span>
             </button>
           ) : (
             <button
-              onClick={submitAttempt}
-              disabled={isSubmitting}
-              className="btn-sage-pastel px-6 py-2.5 rounded-xl text-xs font-black flex items-center space-x-2 shadow-lg"
+              onClick={() => setCurrentIdx((prev) => prev + 1)}
+              className="btn-yellow-pastel px-6 py-2.5 rounded-2xl text-xs font-black flex items-center space-x-2 shadow"
             >
-              <FileCheck className="w-4 h-4" />
-              <span>{isSubmitting ? 'Evaluating...' : 'Submit Assessment'}</span>
+              <span>Next Question</span>
+              <ArrowRight className="w-4 h-4 text-amber-900" />
             </button>
           )}
         </div>
