@@ -12,21 +12,10 @@ const STORAGE_KEYS = {
   INITIALIZED: 'skillpulse_initialized_v10',
 };
 
+// DEFAULT INITIAL ACCOUNTS
 const INITIAL_USERS: User[] = [
   {
-    id: 'u-admin-1',
-    name: 'Prof. Admin Chief',
-    email: 'admin@quizhub.com',
-    password: 'password123',
-    role: 'ADMIN',
-    status: 'ACTIVE',
-    createdAt: '2026-01-10T10:00:00Z',
-    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=ProfAdmin',
-    savedQuizIds: [],
-    bio: 'Head of Computer Science & Engineering',
-  },
-  {
-    id: 'u-student-1',
+    id: 'u-prajakta-1',
     name: 'Prajakta Gochhayat',
     email: 'gochhayatprajakta@gmail.com',
     password: 'password123',
@@ -39,6 +28,21 @@ const INITIAL_USERS: User[] = [
     xpPoints: 3400,
     level: 7,
     streakDays: 9,
+  },
+  {
+    id: 'u-prajakta-admin',
+    name: 'Prajakta Gochhayat',
+    email: 'prajaktagochhayat@gmail.com',
+    password: 'password123',
+    role: 'ADMIN',
+    status: 'ACTIVE',
+    createdAt: '2026-02-01T14:30:00Z',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PrajaktaAdmin',
+    savedQuizIds: [],
+    bio: 'System Administrator',
+    xpPoints: 5000,
+    level: 10,
+    streakDays: 14,
   },
 ];
 
@@ -63,7 +67,6 @@ const INITIAL_CATEGORIES: Category[] = [
   { id: 'cat-git', name: 'Git & Version Control', description: 'Repositories, Branching & PRs', icon: 'GitBranch', createdAt: '2026-01-01' },
 ];
 
-// GENERATE 8 CHAPTERS FOR EVERY SINGLE ONE OF THE 18 SUBJECTS (144 TOTAL CHAPTERS)
 const SUBJECT_IDS = [
   'quiz-py', 'quiz-c', 'quiz-cpp', 'quiz-java', 'quiz-js', 'quiz-ts',
   'quiz-sql', 'quiz-mongodb', 'quiz-dsa', 'quiz-ml', 'quiz-ai', 'quiz-sec',
@@ -112,7 +115,6 @@ In practical execution, ${t.toLowerCase()} provides the required contracts and e
   });
 });
 
-// 18 STANDALONE SUBJECT QUIZZES
 const INITIAL_QUIZZES: Quiz[] = [
   { id: 'quiz-py', title: 'Python Programming & Libraries', description: 'Master core Python syntax, OOP, Decorators, NumPy, Pandas, and FastAPI.', categoryId: 'cat-py', categoryName: 'Python Programming', difficulty: 'Intermediate', duration: 25, passingScore: 60, maxAttempts: 3, status: 'Published', thumbnailUrl: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80', chapters: INITIAL_CHAPTERS.filter(c => c.quizId === 'quiz-py'), averageRating: 4.9, createdAt: '2026-01-15T10:00:00Z', updatedAt: '2026-01-15T10:00:00Z' },
   { id: 'quiz-c', title: 'C Language Fundamentals', description: 'Master procedural C syntax, pointers, structures, and dynamic memory management.', categoryId: 'cat-c', categoryName: 'C Language', difficulty: 'Intermediate', duration: 20, passingScore: 60, maxAttempts: 3, status: 'Published', thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80', chapters: INITIAL_CHAPTERS.filter(c => c.quizId === 'quiz-c'), averageRating: 4.8, createdAt: '2026-01-18T10:00:00Z', updatedAt: '2026-01-18T10:00:00Z' },
@@ -149,7 +151,7 @@ const INITIAL_GAMES: TechGame[] = [
 ];
 
 const INITIAL_ATTEMPTS: QuizAttempt[] = [
-  { id: 'att-101', certificateId: 'QZ-ATT101-998', quizId: 'quiz-py', quizTitle: 'Python Programming & Libraries', userId: 'u-student-1', userName: 'Prajakta Gochhayat', userEmail: 'gochhayatprajakta@gmail.com', score: 5, totalMarks: 5, percentage: 100, correctAnswersCount: 5, incorrectAnswersCount: 0, unansweredCount: 0, timeTakenSeconds: 420, status: 'PASSED', startedAt: '2026-02-10T10:00:00Z', completedAt: '2026-02-10T10:07:00Z', answers: [] },
+  { id: 'att-101', certificateId: 'QZ-ATT101-998', quizId: 'quiz-py', quizTitle: 'Python Programming & Libraries', userId: 'u-prajakta-1', userName: 'Prajakta Gochhayat', userEmail: 'gochhayatprajakta@gmail.com', score: 5, totalMarks: 5, percentage: 100, correctAnswersCount: 5, incorrectAnswersCount: 0, unansweredCount: 0, timeTakenSeconds: 420, status: 'PASSED', startedAt: '2026-02-10T10:00:00Z', completedAt: '2026-02-10T10:07:00Z', answers: [] },
 ];
 
 export function initializeDatabase() {
