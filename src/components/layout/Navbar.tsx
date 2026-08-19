@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Award, Sun, Moon, LogOut, Flame, Sparkles, Zap, ArrowLeft, Settings, User } from 'lucide-react';
+import { Sun, Moon, LogOut, Sparkles, Zap, ArrowLeft, Settings } from 'lucide-react';
 import { AuthModal } from '../auth/AuthModal';
 
 interface NavbarProps {
@@ -57,8 +57,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-black text-xl tracking-tight text-slate-900 dark:text-slate-100">
-                    Skill<span className="text-amber-500 dark:text-yellow-300">Pulse</span>
+                  <span className="font-black text-xl tracking-tight brand-logo-text">
+                    Skill<span className="text-amber-500 font-black">Pulse</span>
                   </span>
                   {user && (
                     <span
@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-purple-900 dark:text-purple-300 font-bold hidden sm:block">
+                <p className="text-[10px] brand-logo-sub font-bold hidden sm:block">
                   Engineering Assessment Platform
                 </p>
               </div>
@@ -79,10 +79,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
 
           {/* Right Action Menu */}
           <div className="flex items-center space-x-3">
-            {/* Theme Toggle (Default Light Mode) */}
+            {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-2xl glass-card-sub hover:bg-purple-500/20 text-purple-950 dark:text-purple-200 transition flex items-center space-x-2 text-xs font-black"
+              className="p-2.5 rounded-2xl mode-toggle-btn transition flex items-center space-x-2 text-xs font-black shadow-sm"
               title="Toggle Light / Dark Mode"
             >
               {theme === 'dark' ? (
@@ -92,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                 </>
               ) : (
                 <>
-                  <Moon className="w-4 h-4 text-purple-700" />
+                  <Moon className="w-4 h-4 text-purple-900" />
                   <span className="hidden md:inline">Dark Mode</span>
                 </>
               )}
@@ -112,10 +112,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                     className="w-8 h-8 rounded-full border-2 border-amber-400 object-cover"
                   />
                   <div className="text-left hidden sm:block">
-                    <p className="text-xs font-black text-purple-950 dark:text-purple-100 leading-tight profile-name-text">
+                    <p className="text-xs font-black profile-name-text leading-tight">
                       {user.name}
                     </p>
-                    <p className="text-[10px] text-purple-900 dark:text-purple-300 leading-tight profile-email-text">{user.email}</p>
+                    <p className="text-[10px] profile-email-text leading-tight">{user.email}</p>
                   </div>
                   <Settings className="w-3.5 h-3.5 text-purple-800 dark:text-purple-300 ml-1" />
                 </button>

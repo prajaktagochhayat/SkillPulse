@@ -12,10 +12,6 @@
     --text-body: #f3f4f6;
     --text-muted: #d8b4fe;
     --border-card: rgba(255, 255, 255, 0.12);
-
-    --purple-primary: #c084fc;
-    --yellow-primary: #facc15;
-    --sage-primary: #34d399;
   }
 
   :root[data-theme="light"],
@@ -28,10 +24,16 @@
     --text-body: #334155;
     --text-muted: #64748b;
     --border-card: rgba(147, 51, 234, 0.18);
+  }
 
-    --purple-primary: #7e22ce;
-    --yellow-primary: #d97706;
-    --sage-primary: #059669;
+  html.light, body.light, html.light #root {
+    background-color: #f8fafc !important;
+    color: #1e293b !important;
+  }
+
+  html.dark, body.dark, html.dark #root {
+    background-color: #090d16 !important;
+    color: #f8fafc !important;
   }
 
   body {
@@ -56,12 +58,46 @@
   border: 1px solid var(--border-card) !important;
 }
 
-/* Light mode specific typography rules */
+/* Light mode specific typography & navbar overrides */
 html.light h1:not(.force-white),
 html.light h2:not(.force-white),
 html.light h3:not(.force-white),
 html.light h4:not(.force-white) {
   color: #0f172a;
+}
+
+html.light .brand-logo-text {
+  color: #1e0a38 !important;
+  font-weight: 900 !important;
+}
+
+html.light .brand-logo-sub {
+  color: #581c87 !important;
+  font-weight: 700 !important;
+}
+
+html.light .mode-toggle-btn {
+  background-color: #f1f5f9 !important;
+  color: #1e0a38 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 800 !important;
+}
+
+html.dark .brand-logo-text {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+html.dark .brand-logo-sub {
+  color: #d8b4fe !important;
+  font-weight: 600 !important;
+}
+
+html.dark .mode-toggle-btn {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  font-weight: 800 !important;
 }
 
 html.light .profile-name-text {
