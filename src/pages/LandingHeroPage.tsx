@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Gamepad2, ShieldCheck, Trophy, Sparkles, ArrowRight, Zap, CheckCircle2, Lock, Star } from 'lucide-react';
-import { AuthModal } from '../components/auth/AuthModal';
+import { BookOpen, Gamepad2, ShieldCheck, Trophy, Sparkles, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
 import type { QuizAttempt } from '../types';
 
@@ -21,7 +20,7 @@ export const LandingHeroPage: React.FC<LandingHeroPageProps> = ({ onOpenAuth }) 
     if (res) {
       setCertResult(res);
     } else {
-      setVerifyErr('Certificate ID not found. Please verify the credentials.');
+      setVerifyErr('Certificate ID not found. Please verify credentials.');
       setCertResult(null);
     }
   };
@@ -38,18 +37,18 @@ export const LandingHeroPage: React.FC<LandingHeroPageProps> = ({ onOpenAuth }) 
   return (
     <div className="space-y-12 animate-fadeIn max-w-6xl mx-auto py-4">
       {/* Main Hero Card */}
-      <div className="glass-card rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-950 text-white relative overflow-hidden shadow-2xl">
+      <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-950 text-white relative overflow-hidden shadow-2xl border border-purple-500/40">
         <div className="relative z-10 space-y-6 max-w-3xl">
-          <div className="inline-flex items-center space-x-2 badge-purple px-4 py-1.5 rounded-full text-xs font-black">
-            <Sparkles className="w-4 h-4 text-amber-400" />
+          <div className="inline-flex items-center space-x-2 bg-amber-400/90 text-purple-950 px-4 py-1.5 rounded-full text-xs font-black shadow">
+            <Sparkles className="w-4 h-4 text-purple-950 font-black" />
             <span>ENGINEERING & TECHNOLOGY ASSESSMENT PLATFORM</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight force-white leading-tight drop-shadow-md">
             Master Technical Skills with Interactive Learning Tracks
           </h1>
 
-          <p className="text-sm sm:text-base text-purple-100 font-bold leading-relaxed">
+          <p className="text-sm sm:text-base force-purple-sub font-bold leading-relaxed">
             SkillPulse empowers engineering scholars with 18 comprehensive technical subjects, 144 detailed chapter overviews with code snippets, non-MCQ arcade mini-games, real-time Supabase sync, and verifiable digital certificates.
           </p>
 
@@ -59,14 +58,14 @@ export const LandingHeroPage: React.FC<LandingHeroPageProps> = ({ onOpenAuth }) 
               className="btn-yellow-pastel px-8 py-3.5 rounded-2xl text-sm font-black inline-flex items-center space-x-2 shadow-xl hover:scale-105 transition transform"
             >
               <span>Get Started / Register Account</span>
-              <ArrowRight className="w-4 h-4 text-amber-900" />
+              <ArrowRight className="w-4 h-4 text-amber-950" />
             </button>
 
             <button
               onClick={onOpenAuth}
-              className="px-8 py-3.5 rounded-2xl glass-card-sub text-sm font-black text-white inline-flex items-center space-x-2 hover:bg-white/10 transition"
+              className="px-8 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-black text-sm inline-flex items-center space-x-2 border border-white/30 backdrop-blur-md transition"
             >
-              <Lock className="w-4 h-4 text-purple-300" />
+              <Lock className="w-4 h-4 text-amber-300" />
               <span>Sign In to Student or Admin Portal</span>
             </button>
           </div>

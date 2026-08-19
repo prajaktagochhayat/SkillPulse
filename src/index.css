@@ -5,14 +5,14 @@
   :root[data-theme="dark"],
   html.dark,
   body.dark {
-    --bg-main: #000000;
-    --bg-card: #121215;
-    --bg-card-sub: #1c1c22;
+    --bg-main: #090d16;
+    --bg-card: #111827;
+    --bg-card-sub: #1f2937;
     --text-heading: #ffffff;
-    --text-body: #f4f4f5;
+    --text-body: #f3f4f6;
     --text-muted: #d8b4fe;
-    --border-card: rgba(255, 255, 255, 0.14);
-    
+    --border-card: rgba(255, 255, 255, 0.12);
+
     --purple-primary: #c084fc;
     --yellow-primary: #facc15;
     --sage-primary: #34d399;
@@ -21,13 +21,13 @@
   :root[data-theme="light"],
   html.light,
   body.light {
-    --bg-main: #f5f0ff;
+    --bg-main: #f8fafc;
     --bg-card: #ffffff;
-    --bg-card-sub: #f3e8ff;
-    --text-heading: #1e0a38;
+    --bg-card-sub: #f1f5f9;
+    --text-heading: #0f172a;
     --text-body: #334155;
-    --text-muted: #475569;
-    --border-card: rgba(147, 51, 234, 0.25);
+    --text-muted: #64748b;
+    --border-card: rgba(147, 51, 234, 0.18);
 
     --purple-primary: #7e22ce;
     --yellow-primary: #d97706;
@@ -48,7 +48,7 @@
 .glass-card {
   background-color: var(--bg-card) !important;
   border: 1px solid var(--border-card) !important;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.06) !important;
 }
 
 .glass-card-sub {
@@ -56,24 +56,19 @@
   border: 1px solid var(--border-card) !important;
 }
 
-/* Light mode specific explicit overrides to guarantee zero washed out text */
-html.light h1, html.light h2, html.light h3, html.light h4, html.light .txt-heading {
-  color: #1e0a38 !important;
+/* Light mode specific typography rules */
+html.light h1:not(.force-white),
+html.light h2:not(.force-white),
+html.light h3:not(.force-white),
+html.light h4:not(.force-white) {
+  color: #0f172a;
 }
 
-html.light p, html.light span, html.light label, html.light div.txt-body {
-  color: #1e1b4b;
-}
-
-html.light .text-muted-custom, html.light .text-purple-950, html.light .text-purple-200, html.light .text-slate-400 {
-  color: #3b0764 !important;
-}
-
-/* Force Header & Profile Name High Contrast in Light Mode */
 html.light .profile-name-text {
   color: #1e0a38 !important;
   font-weight: 900 !important;
 }
+
 html.light .profile-email-text {
   color: #4c1d95 !important;
   font-weight: 700 !important;
@@ -83,6 +78,7 @@ html.dark .profile-name-text {
   color: #ffffff !important;
   font-weight: 900 !important;
 }
+
 html.dark .profile-email-text {
   color: #d8b4fe !important;
   font-weight: 600 !important;
@@ -93,29 +89,17 @@ html.light input, html.light select, html.light textarea {
   color: #0f172a !important;
   border-color: #cbd5e1 !important;
 }
+
 html.light input::placeholder {
   color: #64748b !important;
 }
 
-/* Dark mode explicit overrides */
-html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark .txt-heading {
+/* Force White Hero Elements */
+.force-white {
   color: #ffffff !important;
 }
-
-html.dark p, html.dark span.txt-body {
-  color: #f4f4f5 !important;
-}
-
-/* Sidebar navigation link overrides */
-html.light .nav-link-inactive {
-  color: #2e1052 !important;
-}
-html.light .nav-link-inactive:hover {
-  background-color: rgba(147, 51, 234, 0.12) !important;
-  color: #1e0a38 !important;
-}
-html.dark .nav-link-inactive {
-  color: #e9d5ff !important;
+.force-purple-sub {
+  color: #f3e8ff !important;
 }
 
 /* Badge Styles */
@@ -136,75 +120,30 @@ html.dark .nav-link-inactive {
 .badge-purple {
   background-color: #f3e8ff !important;
   color: #581c87 !important;
-  border: 1px solid rgba(168, 85, 247, 0.6) !important;
+  border: 1px solid rgba(168, 85, 247, 0.5) !important;
   font-weight: 800 !important;
 }
 
-/* Button Styles */
 .btn-yellow-pastel {
-  background-color: #fef08a !important;
-  color: #422006 !important;
-  font-weight: 800 !important;
-  border: 1px solid #facc15 !important;
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #facc15 0%, #fbbf24 100%) !important;
+  color: #1e0a38 !important;
+  font-weight: 900 !important;
+  border: 1px solid #f59e0b !important;
+  transition: all 0.2s ease-in-out !important;
 }
+
 .btn-yellow-pastel:hover {
-  background-color: #facc15 !important;
+  background: linear-gradient(135deg, #fde047 0%, #facc15 100%) !important;
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px -4px rgba(250, 204, 21, 0.4);
+  box-shadow: 0 8px 20px -4px rgba(251, 191, 36, 0.5) !important;
 }
 
-.btn-sage-pastel {
-  background-color: #a7f3d0 !important;
-  color: #064e3b !important;
-  font-weight: 800 !important;
-  border: 1px solid #34d399 !important;
-  transition: all 0.2s ease;
-}
-.btn-sage-pastel:hover {
-  background-color: #34d399 !important;
-  color: #022c22 !important;
-  transform: translateY(-1px);
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.btn-purple-pastel {
-  background-color: #d8b4fe !important;
-  color: #3b0764 !important;
-  font-weight: 800 !important;
-  border: 1px solid #c084fc !important;
-  transition: all 0.2s ease;
-}
-.btn-purple-pastel:hover {
-  background-color: #c084fc !important;
-  color: #2e1052 !important;
-  transform: translateY(-1px);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-main);
-}
-::-webkit-scrollbar-thumb {
-  background: #6b21a8;
-  border-radius: 4px;
-}
-
-/* Print Certificate Styling */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #printable-certificate, #printable-certificate * {
-    visibility: visible;
-  }
-  #printable-certificate {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
 }
