@@ -7,7 +7,6 @@ import type {
   Question,
   QuizAttempt,
   AttemptAnswer,
-  DashboardStats,
   StudentStats,
   LeaderboardEntry,
   UserRole,
@@ -299,7 +298,7 @@ export const api = {
   },
 
   // --- QUIZ ATTEMPTS & BACKEND SCORING ENGINE ---
-  startQuizAttempt: async (quizId: string, userId: string): Promise<{ attemptId: string; questions: Question[] }> => {
+  startQuizAttempt: async (quizId: string, _userId?: string): Promise<{ attemptId: string; questions: Question[] }> => {
     const quiz = await api.getQuizById(quizId);
     if (!quiz) throw new Error('Quiz not found');
 

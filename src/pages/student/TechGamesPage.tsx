@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import type { TechGame } from '../../types';
-import { Gamepad2, Trophy, ArrowLeft, Sparkles, CheckCircle2, RotateCcw, Volume2, VolumeX, ShieldCheck, Flame } from 'lucide-react';
+import { Gamepad2, Trophy, ArrowLeft, Sparkles, CheckCircle2, RotateCcw, Flame } from 'lucide-react';
 
-interface TechGamesPageProps {}
+interface TechGamesPageProps {
+  onNavigate?: (view: string) => void;
+}
 
 // GAME MODE 1: CODE UNSCRAMBLER PUZZLE DATA
 const UNSCRAMBLE_LEVELS = [
